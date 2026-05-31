@@ -227,6 +227,59 @@ function testInterestAccrual() public {
         1062000000000000000
     );
 }
+function testSchedulePause() public {
+
+    finbridge.schedulePause();
+
+    assertTrue(
+        finbridge.isPauseScheduled()
+    );
+}
+
+function testPauseTimelock() public {
+
+    finbridge.schedulePause();
+
+    vm.expectRevert(
+        bytes("Timelock not expired")
+    );
+
+    finbridge.pause();
+}
+
+function testPause() public {
+
+    finbridge.schedulePause();
+
+    vm.warp(
+        block.timestamp + 1 days
+    );
+
+    finbridge.pause();
+
+    assertTrue(
+        finbridge.paused()
+    );
+}
+
+function testUnpause() public {
+
+    finbridge.schedulePause();
+
+    vm.warp(
+        block.timestamp + 1 days
+    );
+
+    finbridge.pause();
+
+    finbridge.unpause();
+
+    assertTrue(
+        !finbridge.paused()
+    );
+}
+
+
 }
 
 
