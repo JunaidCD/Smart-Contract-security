@@ -49,4 +49,79 @@ contract FinBridgeTest is Test {
 
         vm.stopPrank();
     }
+
+    
+function testFundLoan() public {
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+
+    finbridge.connectWallet();
+
+    finbridge.fundLoan{value: 1 ether}(1);
+
+    vm.stopPrank();
+
+    FinBridgeLending.LoanRequest memory loan =
+        finbridge.getLoanRequest(1);
+
+    assertTrue(loan.isFunded);
+    assertEq(loan.lender, bob);
+    assertTrue(loan.isActive);
 }
+
+function testFundLoanCannotFundOwnLoan() public {
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.expectRevert();
+
+    finbridge.fundLoan{value: 1 ether}(1);
+
+    vm.stopPrank();
+}
+
+function testFundLoanWrongAmount() public {
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+
+    finbridge.connectWallet();
+
+    vm.expectRevert();
+
+    finbridge.fundLoan{value: 2 ether}(1);
+
+    vm.stopPrank();
+}
+}
+
+
+
+
+
+
