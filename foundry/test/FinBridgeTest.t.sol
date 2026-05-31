@@ -118,6 +118,115 @@ function testFundLoanWrongAmount() public {
 
     vm.stopPrank();
 }
+
+function testRepayLoan() public {
+
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+
+    finbridge.connectWallet();
+
+    finbridge.fundLoan{value: 1 ether}(1);
+
+    vm.stopPrank();
+
+    vm.prank(alice);
+
+    finbridge.repayLoan{
+        value: 1062000000000000000
+    }(1);
+
+    FinBridgeLending.LoanRequest memory loan =
+        finbridge.getLoanRequest(1);
+
+    assertTrue(loan.isFunded);
+
+    assertTrue(!loan.isActive);
+}
+
+function testRepayLoanWrongAmount() public {
+
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+
+    finbridge.connectWallet();
+
+    finbridge.fundLoan{value: 1 ether}(1);
+
+    vm.stopPrank();
+
+    vm.startPrank(alice);
+
+    vm.expectRevert();
+
+    finbridge.repayLoan{
+        value: 1 ether
+    }(1);
+
+    vm.stopPrank();
+}
+
+function testInterestAccrual() public {
+
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+
+    finbridge.connectWallet();
+
+    finbridge.fundLoan{value: 1 ether}(1);
+
+    vm.stopPrank();
+
+    vm.warp(
+        block.timestamp + 30 days
+    );
+
+    FinBridgeLending.LoanRequest memory loan =
+        finbridge.getLoanRequest(1);
+
+    uint256 repayment =
+        loan.amount +
+        (
+            loan.amount *
+            loan.interestRate /
+            10000
+        );
+
+    assertEq(
+        repayment,
+        1062000000000000000
+    );
+}
 }
 
 
