@@ -279,7 +279,163 @@ function testUnpause() public {
     );
 }
 
+function testDisconnectWallet() public {
 
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.disconnectWallet();
+
+    assertTrue(
+        !finbridge.isWalletConnected(alice)
+    );
+
+    vm.stopPrank();
+}
+
+function testDisconnectWalletNotConnected() public {
+
+    vm.prank(alice);
+
+    vm.expectRevert();
+
+    finbridge.disconnectWallet();
+}
+
+function testWithdrawLoanRequest() public {
+
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    finbridge.withdrawLoanRequest(1);
+
+    FinBridgeLending.LoanRequest memory loan =
+        finbridge.getLoanRequest(1);
+
+    assertTrue(!loan.isActive);
+
+    vm.stopPrank();
+}
+
+function testWithdrawFundedLoanReverts() public {
+
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+
+    finbridge.connectWallet();
+
+    finbridge.fundLoan{value: 1 ether}(1);
+
+    vm.stopPrank();
+
+    vm.startPrank(alice);
+
+    vm.expectRevert();
+
+    finbridge.withdrawLoanRequest(1);
+
+    vm.stopPrank();
+}
+
+function testGetUserLoanRequests() public {
+
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    uint256[] memory loans =
+        finbridge.getUserLoanRequests(alice);
+
+    assertEq(loans.length, 1);
+
+    assertEq(loans[0], 1);
+
+    vm.stopPrank();
+}
+
+function testGetUserFundedLoans() public {
+
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+
+    finbridge.connectWallet();
+
+    finbridge.fundLoan{value: 1 ether}(1);
+
+    uint256[] memory loans =
+        finbridge.getUserFundedLoans(bob);
+
+    assertEq(loans.length, 1);
+
+    assertEq(loans[0], 1);
+
+    vm.stopPrank();
+}
+
+function testGetUserStats() public {
+
+    vm.startPrank(alice);
+
+    finbridge.connectWallet();
+
+    finbridge.createLoanRequest(
+        1 ether,
+        30 days
+    );
+
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+
+    finbridge.connectWallet();
+
+    finbridge.fundLoan{value: 1 ether}(1);
+
+    vm.stopPrank();
+
+    (uint256 borrowed, uint256 lent) =
+        finbridge.getUserStats(alice);
+
+    assertEq(borrowed, 1 ether);
+
+    (borrowed, lent) =
+        finbridge.getUserStats(bob);
+
+    assertEq(lent, 1 ether);
+}
+ 
 }
 
 
