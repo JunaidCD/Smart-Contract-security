@@ -18,9 +18,14 @@
 
 ## 3. Exploit Walkthrough
 
+## 3. Exploit Walkthrough
+
 * The attacker manipulates the liquidity pool reserves to distort the reported token price.
-* The manipulated price significantly reduces the collateral required for borrowing.
-* The attacker borrows all available protocol tokens and drains the lending contract.
+* The manipulated reserves cause the protocol to calculate an artificially low token price.
+* The reduced token price significantly lowers the collateral required for borrowing.
+* The attacker supplies the reduced collateral amount and borrows all available protocol tokens.
+* As a result, the lending contract is drained while the attacker spends only a small amount of collateral.
+
 
 ---
 
