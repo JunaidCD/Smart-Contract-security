@@ -18,8 +18,6 @@
 
 ## 3. Exploit Walkthrough
 
-## 3. Exploit Walkthrough
-
 * The attacker manipulates the liquidity pool reserves to distort the reported token price.
 * The manipulated reserves cause the protocol to calculate an artificially low token price.
 * The reduced token price significantly lowers the collateral required for borrowing.
