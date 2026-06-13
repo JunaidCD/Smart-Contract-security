@@ -1,66 +1,324 @@
-## Foundry
+# Smart Contract Security Journey
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A hands-on smart contract security repository built using Foundry. This repository documents my learning journey through Solidity security concepts, exploit development, protocol analysis, and defensive smart contract design.
 
-Foundry consists of:
+---
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+# Repository Overview
 
-## Documentation
+This repository contains:
 
-https://book.getfoundry.sh/
+* Solidity security exercises
+* Vulnerable smart contracts
+* Exploit proof-of-concepts
+* Patched implementations
+* Security notes and writeups
+* Foundry-based tests
 
-## Usage
+The primary case study currently included is an Oracle Manipulation Attack against a vulnerable lending protocol and its secure remediation.
 
-### Build
+---
 
-```shell
-$ forge build
+# Oracle Manipulation Case Study
+
+## Summary
+
+This project demonstrates how a lending protocol can be drained when it relies on a manipulable spot price derived directly from a liquidity pool's reserves.
+
+The repository includes:
+
+* Vulnerable lending protocol
+* Oracle manipulation exploit
+* Secure oracle implementation
+* Defense validation tests
+
+---
+
+# Attack Flow
+
+<p align="center">
+  <img src="image/oracle-attack-flow.png" alt="Oracle Manipulation Attack Flow" width="800">
+</p>
+
+<p align="center">
+  <em>Figure 1: Oracle manipulation attack against VulnerableLending.</em>
+</p>
+
+---
+
+# Vulnerable Flow
+
+```text
+Attacker
+    │
+    ▼
+Manipulate Pool Reserves
+    │
+    ▼
+getReserves()
+Returns Fake Price
+    │
+    ▼
+Collateral Requirement Drops
+    │
+    ▼
+Borrow Protocol Tokens
+    │
+    ▼
+Protocol Drained
 ```
 
-### Test
+---
 
-```shell
-$ forge test
+# Secure Flow
+
+```text
+Attacker
+    │
+    ▼
+Manipulate Pool Reserves
+    │
+    ▼
+Pool Price Changes
+    │
+    ▼
+Chainlink Oracle Price Unchanged
+    │
+    ▼
+Collateral Requirement Unchanged
+    │
+    ▼
+Attack Fails
 ```
 
-### Format
+---
 
-```shell
-$ forge fmt
+# Project Structure
+
+```text
+foundry
+│
+├── src
+│   ├── VulnerableLending.sol
+│   ├── SecureLending.sol
+│   ├── MockOracle.sol
+│   ├── MockPair.sol
+│   ├── MockERC20.sol
+│   ├── ImmutableConstant.sol
+│   ├── CoverageTrap.sol
+│   └── FinBridgeLending.sol
+│
+├── test
+│   ├── Exploit.t.sol
+│   ├── SecureExploit.t.sol
+│   ├── ImmutableConstant.t.sol
+│   ├── CoverageTrap.t.sol
+│   ├── CoverageTrapInvariant.t.sol
+│   ├── Fork.t.sol
+│   └── FinBridgeTest.t.sol
+│
+├── Notes
+│   ├── Week1
+│   ├── Week2
+│   └── Week3
+│
+└── image
+    └── oracle-attack-flow.png
 ```
 
-### Gas Snapshots
+---
 
-```shell
-$ forge snapshot
+# Key Contracts
+
+## VulnerableLending.sol
+
+A deliberately vulnerable lending protocol that calculates token prices directly from liquidity pool reserves.
+
+### Vulnerability
+
+```solidity
+price = reserveETH / reserveToken
 ```
 
-### Anvil
+Because liquidity pool reserves can be manipulated, the protocol accepts incorrect collateral values.
 
-```shell
-$ anvil
+---
+
+## SecureLending.sol
+
+Patched version of the lending protocol.
+
+### Security Improvements
+
+* Uses oracle pricing
+* Validates oracle response
+* Rejects stale data
+* Rejects invalid rounds
+
+This prevents reserve manipulation attacks from affecting collateral calculations.
+
+---
+
+# Tests
+
+## Exploit Test
+
+```bash
+forge test --match-contract ExploitTest -vvvv
 ```
 
-### Deploy
+Demonstrates:
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+* Reserve manipulation
+* Price distortion
+* Collateral reduction
+* Protocol drain
+
+Expected Result:
+
+```text
+Protocol balance before:
+1000000000000000000000000
+
+Protocol balance after:
+0
 ```
 
-### Cast
+---
 
-```shell
-$ cast <subcommand>
+## Secure Defense Test
+
+```bash
+forge test --match-contract SecureExploitTest -vvvv
 ```
 
-### Help
+Demonstrates:
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+* Oracle manipulation attempt
+* Collateral remains correct
+* Attack fails
+
+Expected Result:
+
+```text
+Attack prevented
+Protocol balance unchanged
 ```
+
+---
+
+# Writeups
+
+## Oracle Manipulation Attack
+
+Article:
+
+https://your-article-link-here.com
+
+Repository Case Study:
+
+* Vulnerable implementation
+* Exploit proof-of-concept
+* Secure implementation
+* Defense validation
+
+---
+
+# Learning Notes
+
+## Week 1
+
+* Ethernaut Fundamentals
+* Solidity Basics
+* Security Foundations
+
+## Week 2
+
+* Function Selectors
+* Proxies
+* Storage Layout
+* Oracle Manipulation
+* Oracle Defenses
+
+## Week 3
+
+* Security Writeups
+* Exploit Documentation
+* Public Research Publication
+
+---
+
+# Running Locally
+
+## Build
+
+```bash
+forge build
+```
+
+## Run All Tests
+
+```bash
+forge test
+```
+
+## Run Exploit
+
+```bash
+forge test --match-contract ExploitTest -vvvv
+```
+
+## Run Secure Defense Test
+
+```bash
+forge test --match-contract SecureExploitTest -vvvv
+```
+
+---
+
+# Tech Stack
+
+* Solidity
+* Foundry
+* OpenZeppelin
+* Chainlink Oracle Pattern
+* Git & GitHub
+
+---
+
+# Future Work
+
+Planned topics:
+
+* Reentrancy Attacks
+* Flash Loan Attacks
+* Governance Attacks
+* Signature Replay Issues
+* Upgradeability Vulnerabilities
+* Formal Verification
+* Advanced Audit Findings
+
+---
+
+# Disclaimer
+
+This repository is intended for educational and research purposes only.
+
+All vulnerable contracts are intentionally insecure and should never be used in production environments.
+
+---
+
+# Author
+
+Junaid
+
+Smart Contract Security Research Journey
+
+GitHub:
+https://github.com/JunaidCD
+
+LinkedIn:
+https://www.linkedin.com/in/junaid-mollah-a59150319/
+
+X:
+https://x.com/JunaidMollah5
