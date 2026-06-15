@@ -296,34 +296,6 @@ All vulnerable contracts are intentionally insecure and should never be used in 
 
 ---
 
-
-# Writeups
-
-## Oracle Manipulation Attack
-
-**Article:**
-
-https://dev.to/junaidmollah01/breaking-a-lending-protocol-through-oracle-manipulation-from-exploit-to-fix-3p2o
-
-This article covers:
-
-* Vulnerable oracle design
-* Reserve manipulation attack
-* Flash-loan-assisted exploitation
-* Root cause analysis
-* Secure oracle implementation
-* Reviewer's checklist for identifying similar vulnerabilities
-
-Repository Case Study Includes:
-
-* Vulnerable implementation
-* Exploit proof-of-concept
-* Secure implementation
-* Defense validation tests
-
----
-
-
 # Author
 
 Junaid
