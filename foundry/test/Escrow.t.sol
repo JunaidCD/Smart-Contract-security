@@ -6,6 +6,8 @@ import "../src/Escrow.sol";
 
 contract EscrowTest is Test {
 
+    receive() external payable {}
+
     Escrow public escrow;
 
     address buyer = address(this);
